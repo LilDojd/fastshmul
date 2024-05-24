@@ -1,0 +1,89 @@
+[tool.poetry]
+name = "fastshmul"
+version = "0.1.0"
+description = "Fast and accurate spherical harmonics products in rust"
+classifiers = [
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: MIT",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: POSIX :: Linux",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering",
+]
+authors = ["Georgy Andreev <yawner@pm.me>"]
+include = ["pyproject.toml"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "fastshmul-py" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+
+[tool.poetry.group.dev.dependencies]
+maturin = "^1.5.1"
+pytest = "^8.2.1"
+pytest-cov = "^5.0.0"
+ruff = "^0.4.5"
+mypy = "^1.10.0"
+pre-commit = "^3.7.1"
+black = "^24.4.2"
+mypy-protobuf = "^3.6.0"
+
+
+[build-system]
+requires = ["maturin~=1.5.1"]
+build-backend = "maturin"
+
+[project]
+name = "fastshmul"
+version = "0.1.0"
+description = "Fast and accurate spherical harmonics products in rust"
+authors = [{ name = "Georgy Andreev", email = "yawner@pm.me" }]
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+classifiers = [
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: MIT",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: POSIX :: Linux",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering",
+]
+
+[project.urls]
+homepage = "https://github.com/LilDojd/fastshmul"
+repository = "https://github.com/LilDojd/fastshmul"
+
+[tool.maturin]
+module-name = "fastshmul._fastshmul"
+manifest-path = "fastshmul-py/Cargo.toml"
+python-source = "fastshmul-py"
+
+[tool.pytest.ini_options]
+# Lark throws deprecation warnings for `src_parse` and `src_constants`.
+filterwarnings = "ignore::DeprecationWarning:lark.*"
+
+[tool.pyright]
+# Rust bindings have typing stubs but no python source code.
+reportMissingModuleSource = "none"
+
+[tool.ruff]
+line-length = 70
+
+[tool.black]
+line-length = 70
+target-version = ['py38']
+preview = true
+
+[tool.autopep8]
+max_line_length = 70
+ignore = "E501,W6"   # or ["E501", "W6"]
+in-place = true
+recursive = true
+aggressive = 3
