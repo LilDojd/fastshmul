@@ -89,7 +89,7 @@ impl TryFrom<&str> for Irrep {
         let p = match last_char {
             Some('o') => AOk(-1),
             Some('e') => AOk(1),
-            Some('y') => AOk((1_i8).pow(l)),
+            Some('y') => AOk((-1_i8).pow(l)),
             _ => {
                 return Err(ParseError {
                     found: last_char.unwrap_or(' ').to_string(),
@@ -151,9 +151,9 @@ mod tests {
     #[rstest]
     #[case("1o", 1, -1)]
     #[case("1e", 1, 1)]
-    #[case("1y", 1, 1)]
+    #[case("1y", 1, -1)]
     #[case("2y", 2, 1)]
-    #[case("3y", 3, 1)]
+    #[case("3y", 3, -1)]
     #[case("4o", 4, -1)]
     #[case("0o", 0, -1)]
     fn test_irrep_try_from_valid(#[case] s: &str, #[case] l: u32, #[case] p: i8) {
