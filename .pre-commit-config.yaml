@@ -36,18 +36,11 @@ repos:
     hooks:
       - id: black
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.0.255"
+    rev: "v0.4.5"
     hooks:
       - id: ruff
-        args: [--fix]
-  - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.6.3
-    hooks:
-      - id: nbqa-black
-        additional_dependencies: [ipython==8.12, black]
-      - id: nbqa-ruff
-        args: ["--ignore=I001"]
-        additional_dependencies: [ipython==8.12, ruff]
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
   - repo: local
     hooks:
       - id: cargo-fmt
@@ -85,10 +78,10 @@ repos:
         language: system
         files: \.rs$
         pass_filenames: false
-      - id: py-test
-        name: pytest
-        description: Run python tests
-        entry: poetry run -- sh -c "maturin develop && pytest --cov=./ --cov-report=html"
-        language: system
-        files: \.py$
-        pass_filenames: false
+      # - id: py-test
+      #   name: pytest
+      #   description: Run python tests
+      #   entry: poetry run -- sh -c "maturin develop && pytest --cov=./ --cov-report=html"
+      #   language: system
+      #   files: \.py$
+      #   pass_filenames: false

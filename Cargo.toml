@@ -1,0 +1,17 @@
+[workspace]
+resolver = "2"
+members = ["fastshmul", "fastshmul-py"]
+default-members = ["fastshmul"]
+
+[workspace.package]
+rust-version = "1.78"
+edition = "2021"
+homepage = "https://github.com/LilDojd/fastshmul"
+repository = "https://github.com/LilDojd/fastrshmul"
+license = "MIT"
+
+[workspace.lints.rust]
+missing_docs = "allow"
+
+[workspace.dependencies]
+pyo3 = "0.21.2"

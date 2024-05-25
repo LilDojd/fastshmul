@@ -1,8 +1,8 @@
 ## fastshmul-py
 
 This package uses [pyo3](https://pyo3.rs/) and
-[maturin](https://github.com/PyO3/maturin) to bind fastmulsh functionality to
-python as the `fastmulsh` package.
+[maturin](https://github.com/PyO3/maturin) to bind fastshmul functionality to
+python as the `fastshmul` package.
 
 Recommended:
 

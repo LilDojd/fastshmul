@@ -28,6 +28,8 @@ venv/
 *.egg-info/
 .installed.cfg
 *.egg
+.ipynb_checkpoints
+*.ipynb
 
 # Installer logs
 pip-log.txt

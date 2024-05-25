@@ -22,7 +22,7 @@ test language="[rust|python]" : (_run_lang language \
         "poetry run maturin develop && poetry run pytest"
     )
 
-# Auto-fix all clippy warnings.
+# Auto-fix all warnings.
 fix language="[rust|python]": (_run_lang language \
         "poetry run -- cargo clippy --all-targets --all-features --workspace --fix --allow-staged --allow-dirty" \
         "poetry run -- ruff check --fix"

@@ -1,0 +1,34 @@
+[package]
+name = "fastshmul"
+version = "0.1.0"
+edition = { workspace = true }
+rust-version = { workspace = true }
+
+license = { workspace = true }
+readme = "README.md"
+documentation = "https://docs.rs/fastshmul"
+homepage = { workspace = true }
+repository = { workspace = true }
+description = "Fast and accurate spherical harmonics products in rust"
+keywords = [
+  "spherical harmonics",
+  "tensor product",
+  "computing",
+  "machine learning",
+]
+
+[lib]
+# bench = false
+name = "fastshmul"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = "1.0.86"
+num = { version = "0.4.3", features = ["rand"] }
+num-derive = "0.4.2"
+num-traits = "0.2.19"
+thiserror = "1.0.61"
+
+# [[bench]]
+# name = "bench_main"
+# harness = false
