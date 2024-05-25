@@ -1,7 +1,11 @@
-use crate::errors::{ParseError, ValidationError};
+use std::{fmt::Display, str::FromStr};
+
+use crate::errors::ParseError;
+use crate::Parity;
+use crate::Parity::Odd;
 use anyhow::Ok as AOk;
-use anyhow::{bail, Result};
-use num::FromPrimitive;
+use anyhow::Result;
+use num_traits::pow;
 
 /// Irreducible representation of O(3)
 /// This struct does not contain any data, it is a structure that describe the representation.
@@ -10,8 +14,8 @@ use num::FromPrimitive;
 
 #[derive(Debug, PartialEq)]
 pub struct Irrep {
-    pub l: u32,
-    pub p: Parity,
+    l: u32,
+    p: Parity,
 }
 
 impl Irrep {
@@ -29,11 +33,11 @@ impl Irrep {
     ///
     /// let irrep = Irrep::new(6, 1);
     ///
-    /// assert_eq!(irrep.l, 6);
-    /// assert_eq!(irrep.p, Parity::Even);
+    /// assert_eq!(irrep.l(), 6);
+    /// assert_eq!(irrep.p(), Parity::Even);
     ///
     /// let irrep = Irrep::new(6, Parity::Odd);
-    /// assert_eq!(irrep.p, Parity::Odd);
+    /// assert_eq!(irrep.p(), Parity::Odd);
     /// ```
     ///
     /// Trying to pass numeric values other than 1 or -1 will panic:
@@ -48,6 +52,75 @@ impl Irrep {
     {
         let p = p.try_into().unwrap();
         Irrep { l, p }
+    }
+
+    pub fn l(&self) -> u32 {
+        self.l
+    }
+
+    pub fn p(&self) -> Parity {
+        self.p
+    }
+    /// Create an iterator over the irreps of O(3) up to a maximum degree `lmax`
+    ///
+    /// # Example
+    /// ```
+    /// use fastshmul::Irrep;
+    /// let mut iter = Irrep::iterator(Some(2));
+    /// assert_eq!(iter.next().unwrap().to_string(), "0e");
+    /// assert_eq!(iter.next().unwrap().to_string(), "0o");
+    /// assert_eq!(iter.next().unwrap().to_string(), "1o");
+    /// assert_eq!(iter.next().unwrap().to_string(), "1e");
+    /// assert_eq!(iter.next().unwrap().to_string(), "2e");
+    /// assert_eq!(iter.next().unwrap().to_string(), "2o");
+    /// ```
+    pub fn iterator(lmax: Option<u32>) -> IrrepIterator {
+        IrrepIterator {
+            current_l: 0,
+            lmax,
+            state: false,
+        }
+    }
+}
+
+pub struct IrrepIterator {
+    current_l: u32,
+    lmax: Option<u32>,
+    state: bool,
+}
+
+impl Iterator for IrrepIterator {
+    type Item = Irrep;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(lmax) = self.lmax {
+            if self.current_l > lmax {
+                return None;
+            }
+        }
+
+        let parity = if !self.state {
+            pow(Odd, self.current_l as usize)
+        } else {
+            -pow(Odd, self.current_l as usize)
+        };
+
+        let irrep = Irrep::new(self.current_l, parity);
+
+        if !self.state {
+            self.state = true;
+        } else {
+            self.state = false;
+            self.current_l += 1;
+        }
+
+        Some(irrep)
+    }
+}
+
+impl Display for Irrep {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}", self.l(), self.p())
     }
 }
 
@@ -70,8 +143,8 @@ impl TryFrom<&str> for Irrep {
     /// // This will product a vector irrep (l=1, odd)
     /// let irrep = Irrep::try_from("1o").unwrap();
     ///
-    /// assert_eq!(irrep.l, 1);
-    /// assert_eq!(irrep.p, Parity::Odd);
+    /// assert_eq!(irrep.l(), 1);
+    /// assert_eq!(irrep.p(), Parity::Odd);
     ///
     /// let invalid_irrep = Irrep::try_from("babytears");
     /// assert!(invalid_irrep.is_err());
@@ -87,9 +160,9 @@ impl TryFrom<&str> for Irrep {
         let l = order_l.parse::<u32>()?;
         let last_char = name.chars().last();
         let p = match last_char {
-            Some('o') => AOk(-1),
-            Some('e') => AOk(1),
-            Some('y') => AOk((-1_i8).pow(l)),
+            Some('o') => AOk(Parity::from_str("o")),
+            Some('e') => AOk(Parity::from_str("e")),
+            Some('y') => AOk(Parity::from_str_spherical("y", l)),
             _ => {
                 return Err(ParseError {
                     found: last_char.unwrap_or(' ').to_string(),
@@ -97,35 +170,20 @@ impl TryFrom<&str> for Irrep {
                 }
                 .into())
             }
-        }?;
+        }??;
 
         Ok(Irrep::new(l, p))
     }
 }
 
-/// The parity of the representation. Can be either 1 or -1
-#[derive(Debug, num_derive::FromPrimitive, num_derive::ToPrimitive, PartialEq)]
-pub enum Parity {
-    Even = 1,
-    Odd = -1,
-}
-
-impl TryFrom<i8> for Parity {
-    type Error = anyhow::Error;
-
-    fn try_from(value: i8) -> Result<Self, Self::Error> {
-        if let Some(v) = FromPrimitive::from_i8(value) {
-            Ok(v)
-        } else {
-            bail!(ValidationError {
-                expected: String::from("{1, -1}"),
-                found: value.to_string(),
-            })
-        }
-    }
-}
-
-// Tests
+// 88888888888 8888888888 .d8888b. 88888888888 .d8888b.
+//     888     888       d88P  Y88b    888    d88P  Y88b
+//     888     888       Y88b.         888    Y88b.
+//     888     8888888    "Y888b.      888     "Y888b.
+//     888     888           "Y88b.    888        "Y88b.
+//     888     888             "888    888          "888
+//     888     888       Y88b  d88P    888    Y88b  d88P
+//     888     8888888888 "Y8888P"     888     "Y8888P"
 
 #[cfg(test)]
 mod tests {
@@ -135,11 +193,11 @@ mod tests {
     #[test]
     fn test_irrep_new() {
         let irrep = Irrep::new(6, 1);
-        assert_eq!(irrep.l, 6);
-        assert_eq!(irrep.p, Parity::Even);
+        assert_eq!(irrep.l(), 6);
+        assert_eq!(irrep.p(), Parity::Even);
 
         let irrep = Irrep::new(6, Parity::Odd);
-        assert_eq!(irrep.p, Parity::Odd);
+        assert_eq!(irrep.p(), Parity::Odd);
     }
 
     #[test]
@@ -158,8 +216,8 @@ mod tests {
     #[case("0o", 0, -1)]
     fn test_irrep_try_from_valid(#[case] s: &str, #[case] l: u32, #[case] p: i8) {
         let irrep = Irrep::try_from(s).unwrap();
-        assert_eq!(irrep.l, l);
-        assert_eq!(irrep.p, Parity::try_from(p).unwrap());
+        assert_eq!(irrep.l(), l);
+        assert_eq!(irrep.p(), p.try_into().unwrap());
     }
 
     #[rstest]
@@ -171,5 +229,13 @@ mod tests {
     #[should_panic]
     fn test_irrep_try_from_invalid(#[case] s: &str) {
         let _ = Irrep::try_from(s).unwrap();
+    }
+
+    #[rstest]
+    #[case(Irrep::new(1, -1), "1o")]
+    #[case(Irrep::new(7, 1), "7e")]
+    #[case(Irrep::new(3, -1), "3o")]
+    fn test_irrep_display(#[case] irrep: Irrep, #[case] expected: &str) {
+        assert_eq!(irrep.to_string(), expected);
     }
 }

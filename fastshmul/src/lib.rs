@@ -1,4 +1,6 @@
 pub(crate) mod errors;
-pub mod irreps;
+pub(crate) mod parity;
 
-pub use irreps::{Irrep, Parity};
+pub use parity::Parity;
+pub mod irreps;
+pub use irreps::Irrep;
