@@ -29,6 +29,9 @@ num-derive = "0.4.2"
 num-traits = "0.2.19"
 thiserror = "1.0.61"
 
+[dev-dependencies]
+rstest = "0.19.0"
+
 # [[bench]]
 # name = "bench_main"
 # harness = false

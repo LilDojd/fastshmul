@@ -124,3 +124,52 @@ impl TryFrom<i8> for Parity {
         }
     }
 }
+
+// Tests
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::*;
+
+    #[test]
+    fn test_irrep_new() {
+        let irrep = Irrep::new(6, 1);
+        assert_eq!(irrep.l, 6);
+        assert_eq!(irrep.p, Parity::Even);
+
+        let irrep = Irrep::new(6, Parity::Odd);
+        assert_eq!(irrep.p, Parity::Odd);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_irrep_new_panic() {
+        let _ = Irrep::new(1, 100);
+    }
+
+    #[rstest]
+    #[case("1o", 1, -1)]
+    #[case("1e", 1, 1)]
+    #[case("1y", 1, 1)]
+    #[case("2y", 2, 1)]
+    #[case("3y", 3, 1)]
+    #[case("4o", 4, -1)]
+    #[case("0o", 0, -1)]
+    fn test_irrep_try_from_valid(#[case] s: &str, #[case] l: u32, #[case] p: i8) {
+        let irrep = Irrep::try_from(s).unwrap();
+        assert_eq!(irrep.l, l);
+        assert_eq!(irrep.p, Parity::try_from(p).unwrap());
+    }
+
+    #[rstest]
+    #[case("babytears")]
+    #[case("1")]
+    #[case("1a")]
+    #[case("1o1")]
+    #[case("-1o")]
+    #[should_panic]
+    fn test_irrep_try_from_invalid(#[case] s: &str) {
+        let _ = Irrep::try_from(s).unwrap();
+    }
+}
