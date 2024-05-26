@@ -308,6 +308,8 @@ impl Irrep {
     }
 }
 
+/// Iterator over the irreps of O(3)
+/// The iterator will return the irreps in the order `0e, 0o, 1o, 1e, 2e, 2o, ...`
 pub struct IrrepIterator {
     current_l: u32,
     lmax: Option<u32>,
