@@ -67,9 +67,14 @@ impl Irreps {
     ///
     /// # Example
     /// ```
-    /// use fastshmul::{Irrep, Irreps};
-    /// let irreps = Irreps::try_from("2x1e + 3x2o").unwrap();
+    /// # use fastshmul::{Irrep, Irreps};
+    /// # use std::error::Error;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// let irreps = Irreps::try_from("2x1e + 3x2o")?;
     /// assert_eq!(irreps.count(Irrep::new(1, 1)), 2);
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn count(self, ir: Irrep) -> u32 {
         self.into_iter()
@@ -89,20 +94,29 @@ impl Irreps {
     /// # Examples
     ///
     /// ```
-    /// use fastshmul::Irreps;
-    ///
-    /// let irreps = Irreps::try_from("2x1e + 2x1e + 1x1o").unwrap();
+    /// # use fastshmul::Irreps;
+    /// # use std::error::Error;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// let irreps = Irreps::try_from("2x1e + 2x1e + 1x1o")?;
     /// let simplified = irreps.simplify();
     /// assert_eq!(simplified.to_string(), "4x1e + 1x1o");
+    /// #
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     /// Note: Equivalent representations which are separated from each other are not combined.
     ///
     /// ```
-    /// use fastshmul::Irreps;
-    ///
-    /// let irreps = Irreps::try_from("1e + 1e + 0x1e + 0e + 1e").unwrap().simplify();
+    /// # use fastshmul::Irreps;
+    /// # use std::error::Error;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// let irreps = Irreps::try_from("1e + 1e + 0x1e + 0e + 1e")?.simplify();
     /// assert_eq!(irreps.to_string(), "2x1e + 1x0e + 1x1e");
+    /// # Ok(())
+    /// }
     /// ```
     pub fn simplify(self) -> Self {
         let iter = self.into_iter().peekable();
@@ -140,11 +154,15 @@ impl Irreps {
     ///
     /// # Example
     /// ```
-    /// use fastshmul::Irreps;
-    ///
-    /// let irreps = Irreps::try_from("2x1e + 0x1o + 0x2e").unwrap();
+    /// # use fastshmul::Irreps;
+    /// # use std::error::Error;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// let irreps = Irreps::try_from("2x1e + 0x1o + 0x2e")?;
     /// let simplified = irreps.remove_zero_multiplicities();
     /// assert_eq!(simplified.to_string(), "2x1e");
+    /// # Ok(())
+    /// # }
 
     pub fn remove_zero_multiplicities(self) -> Self {
         let vec = self.into_iter().filter(|mulir| mulir.mul > 0).collect();
@@ -162,13 +180,17 @@ impl Irreps {
     /// # Examples
     ///
     /// ```
-    /// use fastshmul::Irreps;
+    /// # use fastshmul::Irreps;
+    /// # use std::error::Error;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// assert_eq!(Irreps::try_from("1e + 0e + 1e")?.sort().irreps.to_string(), "1x0e + 1x1e + 1x1e");
     ///
-    /// assert_eq!(Irreps::try_from("1e + 0e + 1e").unwrap().sort().irreps.to_string(), "1x0e + 1x1e + 1x1e");
-    ///
-    /// let sorted_irreps = Irreps::try_from("2o + 1e + 0e + 1e").unwrap().sort();
+    /// let sorted_irreps = Irreps::try_from("2o + 1e + 0e + 1e")?.sort();
     /// assert_eq!(sorted_irreps.p, vec![3, 1, 0, 2]);
     /// assert_eq!(sorted_irreps.inv, vec![2, 1, 3, 0]);
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn sort(self) -> SortedIrreps {
         let inv = argsort(&self.vec);
@@ -241,7 +263,7 @@ impl Irrep {
     ///
     /// # Examples
     /// ```
-    /// use fastshmul::{Irrep, Parity};
+    /// # use fastshmul::{Irrep, Parity};
     ///
     /// let irrep = Irrep::new(6, 1);
     ///
@@ -280,7 +302,7 @@ impl Irrep {
     ///
     /// # Example
     /// ```
-    /// use fastshmul::Irrep;
+    /// # use fastshmul::Irrep;
     ///
     /// let irr = Irrep::irrep_iterator().take(6).map(|x|x.to_string()).collect::<Vec<_>>();
     /// let irr_lmax = Irrep::irrep_iterator().take_lmax(2).map(|x|x.to_string()).collect::<Vec<_>>();
@@ -343,7 +365,7 @@ impl Mul for Irrep {
     ///
     /// # Example
     /// ```
-    /// use fastshmul::Irrep;
+    /// # use fastshmul::Irrep;
     /// let irrep1 = Irrep::new(1, 1);
     /// let irrep2 = Irrep::new(2, -1);
     /// let irreps = irrep1 * irrep2;
@@ -374,7 +396,7 @@ where
     ///
     /// # Example
     /// ```
-    /// use fastshmul::Irrep;
+    /// # use fastshmul::Irrep;
     ///
     /// let irrep = Irrep::new(1, 1);
     ///
@@ -415,7 +437,7 @@ impl Add for Irrep {
     /// # Example
     ///
     /// ```
-    /// use fastshmul::Irrep;
+    /// # use fastshmul::Irrep;
     ///
     /// let irr1 = Irrep::new(2, 1);
     ///
@@ -447,13 +469,17 @@ where
     ///
     /// # Example
     /// ```
-    /// use fastshmul::Irreps;
-    ///
-    /// let irreps = Irreps::try_from("2x1e").unwrap();
+    /// # use fastshmul::Irreps;
+    /// # use std::error::Error;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// let irreps = Irreps::try_from("2x1e")?;
     ///
     /// // Not limited to rhs
     /// let irreps = irreps * 3_u32;
     /// assert_eq!(irreps.to_string(), "2x1e + 2x1e + 2x1e");
+    /// # Ok(())
+    /// # }
     /// ```
     fn mul(self, rhs: T) -> Self::Output {
         let rhs: u32 = rhs.try_into().unwrap();
@@ -496,10 +522,15 @@ impl Display for _MulIr {
 ///
 /// # Example
 /// ```
-/// use fastshmul::Irreps;
-/// let irrep = Irreps::try_from("100x0e + 50x1o + 8x3o").ok().unwrap();
+/// # use fastshmul::Irreps;
+/// # use std::error::Error;
+/// #
+/// # fn main() -> Result<(), Box<dyn Error>> {
+/// let irrep = Irreps::try_from("100x0e + 50x1o + 8x3o")?;
 ///
 /// assert_eq!(irrep.to_string(), "100x0e + 50x1o + 8x3o");
+/// # Ok(())
+/// # }
 /// ```
 impl Display for Irreps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -528,16 +559,20 @@ impl TryFrom<&str> for Irrep {
     ///
     /// # Example
     /// ```
-    /// use fastshmul::{Irrep, Parity};
-    ///
+    /// # use fastshmul::{Irrep, Parity};
+    /// # use std::error::Error;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// // This will product a vector irrep (l=1, odd)
-    /// let irrep = Irrep::try_from("1o").unwrap();
+    /// let irrep = Irrep::try_from("1o")?;
     ///
     /// assert_eq!(irrep.l, 1);
     /// assert_eq!(irrep.p, Parity::Odd);
     ///
     /// let invalid_irrep = Irrep::try_from("babytears");
     /// assert!(invalid_irrep.is_err());
+    /// # Ok(())
+    /// # }
     /// ```
     fn try_from(s: &str) -> Result<Self> {
         let name = s.trim();
