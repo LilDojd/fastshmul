@@ -4,7 +4,6 @@ use num_derive::ToPrimitive;
 use std::{
     fmt::Display,
     ops::{Mul, Neg},
-    str::FromStr,
 };
 
 use num::{One, Zero};
@@ -96,10 +95,10 @@ macro_rules! impl_traits_for_primitives {
 
 impl_traits_for_primitives!(isize, i64, i32, i16, i8, f32, f64);
 
-impl FromStr for Parity {
-    type Err = anyhow::Error;
+impl TryFrom<&str> for Parity {
+    type Error = anyhow::Error;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn try_from(s: &str) -> Result<Self> {
         match s {
             "e" => Ok(Even),
             "o" => Ok(Odd),
@@ -112,7 +111,7 @@ impl FromStr for Parity {
 }
 
 impl Parity {
-    pub fn from_str_spherical(s: &str, order: u32) -> Result<Self> {
+    pub fn try_from_str_spherical(s: &str, order: u32) -> Result<Self> {
         match s {
             "e" => Ok(Even),
             "o" => Ok(Odd),
@@ -148,13 +147,12 @@ mod tests {
     use super::*;
     use num::ToPrimitive;
     use rstest::*;
-    use std::str::FromStr;
 
     #[rstest]
     #[case("e", Even)]
     #[case("o", Odd)]
     fn test_parity_from_str(#[case] s: &str, #[case] expected: Parity) {
-        let parity = Parity::from_str(s).unwrap();
+        let parity = Parity::try_from(s).unwrap();
         assert_eq!(parity, expected);
     }
 
