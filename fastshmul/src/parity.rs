@@ -74,16 +74,15 @@ macro_rules! impl_traits_for_primitives {
                 }
             }
 
-            impl TryInto<Parity> for $num_type {
+            impl TryFrom<$num_type> for Parity {
                 type Error = anyhow::Error;
 
-                fn try_into(self) -> Result<Parity> {
-
-                    match self as isize {
+                fn try_from(x: $num_type) -> Result<Parity> {
+                    match x as isize {
                         1 => Ok(Even),
                         -1 => Ok(Odd),
                         _ => bail!(ParseError {
-                            found: self.to_string(),
+                            found: x.to_string(),
                             target: String::from("1, -1"),
                         }),
                     }

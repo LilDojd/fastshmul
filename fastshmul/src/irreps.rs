@@ -40,6 +40,20 @@ pub struct Irreps {
     vec: Vec<_MulIr>,
 }
 
+impl std::ops::Deref for Irreps {
+    type Target = Vec<_MulIr>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.vec
+    }
+}
+
+impl std::ops::DerefMut for Irreps {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.vec
+    }
+}
+
 impl Irreps {
     fn parse_irreps(input: &str) -> Result<Vec<_MulIr>> {
         input
@@ -245,9 +259,9 @@ impl Irrep {
     ///
     /// `Irrep.p` is the parity of the representation, it can be either `Parity::Even` (1) or `Parity::Odd` (-1)
     ///
-    /// # Errors
+    /// # Panics
     ///
-    /// This function will return an error if the parity is not 1 or -1
+    /// This function will panic if the parity is not 1 or -1
     ///
     /// # Examples
     /// ```
