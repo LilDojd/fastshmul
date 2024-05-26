@@ -276,23 +276,20 @@ impl Irrep {
         self.l == 0 && self.p == Parity::Even
     }
 
-    /// Create an iterator over the irreps of O(3) up to a maximum degree `lmax`
+    /// Create an iterator over the irreps of O(3)
     ///
     /// # Example
     /// ```
     /// use fastshmul::Irrep;
-    /// let mut iter = Irrep::iterator(Some(2));
-    /// assert_eq!(iter.next().unwrap().to_string(), "0e");
-    /// assert_eq!(iter.next().unwrap().to_string(), "0o");
-    /// assert_eq!(iter.next().unwrap().to_string(), "1o");
-    /// assert_eq!(iter.next().unwrap().to_string(), "1e");
-    /// assert_eq!(iter.next().unwrap().to_string(), "2e");
-    /// assert_eq!(iter.next().unwrap().to_string(), "2o");
+    ///
+    /// let irr = Irrep::irrep_iterator().take(6).map(|x|x.to_string()).collect::<Vec<_>>();
+    /// let irr_lmax = Irrep::irrep_iterator().take_lmax(2).map(|x|x.to_string()).collect::<Vec<_>>();
+    /// assert_eq!(irr, vec!["0e", "0o", "1o", "1e", "2e", "2o"]);
+    /// assert_eq!(irr_lmax, irr);
     /// ```
-    pub fn iterator(lmax: Option<u32>) -> IrrepIterator {
+    pub fn irrep_iterator() -> IrrepIterator {
         IrrepIterator {
             current_l: 0,
-            lmax,
             state: false,
         }
     }
@@ -300,9 +297,9 @@ impl Irrep {
 
 /// Iterator over the irreps of O(3)
 /// The iterator will return the irreps in the order `0e, 0o, 1o, 1e, 2e, 2o, ...`
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct IrrepIterator {
     current_l: u32,
-    lmax: Option<u32>,
     state: bool,
 }
 
@@ -310,12 +307,6 @@ impl Iterator for IrrepIterator {
     type Item = Irrep;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(lmax) = self.lmax {
-            if self.current_l > lmax {
-                return None;
-            }
-        }
-
         let parity = if !self.state {
             pow(Odd, self.current_l as usize)
         } else {
@@ -332,6 +323,16 @@ impl Iterator for IrrepIterator {
         }
 
         Some(irrep)
+    }
+}
+
+impl IrrepIterator {
+    /// Takes irreps up to `lmax`
+    pub fn take_lmax(self, lmax: usize) -> std::iter::Take<Self>
+    where
+        Self: Sized + Iterator,
+    {
+        self.take((lmax + 1) * 2)
     }
 }
 
