@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -12,4 +14,17 @@ pub struct ValidationError {
 pub struct ParseError {
     pub(crate) found: String,
     pub(crate) target: String,
+}
+
+#[derive(Error, Debug)]
+pub struct UnexpectedError {
+    pub(crate) msg: String,
+    #[source]
+    pub(crate) source: anyhow::Error,
+}
+
+impl Display for UnexpectedError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {}", self.msg, self.source)
+    }
 }

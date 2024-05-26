@@ -3,12 +3,12 @@ use std::{
     ops::{Add, Mul},
 };
 
-use crate::errors::ParseError;
+use crate::errors::{ParseError, UnexpectedError};
 use crate::Parity;
 use crate::Parity::Odd;
 use anyhow::Ok as AOk;
 use anyhow::{bail, Result};
-use derive_more::IntoIterator;
+use derive_more::{Index, IndexMut, IntoIterator};
 use num::{abs, Unsigned};
 use num_traits::pow;
 
@@ -38,7 +38,7 @@ pub struct _MulIr {
 
 // I could have implemented `Deref` and `DerefMut`, but for exposed newtypes
 // the solution is composition over inheritance. Will just delegate to vec when needed
-#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, IntoIterator)]
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, IntoIterator, Index, IndexMut)]
 pub struct Irreps {
     vec: Vec<_MulIr>,
 }
@@ -203,6 +203,80 @@ impl Irreps {
             p,
             inv,
         }
+    }
+
+    pub fn dim(&self) -> u32 {
+        self.vec
+            .iter()
+            .map(|mulir| mulir.ir.dim() * mulir.mul)
+            .sum()
+    }
+
+    pub fn len(&self) -> usize {
+        self.vec.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.vec.is_empty()
+    }
+
+    pub fn num_irreps(&self) -> usize {
+        self.vec.iter().map(|mulir| mulir.mul).sum::<u32>() as usize
+    }
+
+    /// # Example
+    /// ```
+    /// # use fastshmul::Irreps;
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// let irrs = Irreps::try_from("5x1o + 2x2e")?;
+    /// assert_eq!(irrs.ls(), vec![1, 1, 1, 1, 1, 2, 2]);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn ls(&self) -> Vec<u32> {
+        self.vec
+            .iter()
+            .flat_map(|mulir| std::iter::repeat(mulir.ir.l).take(mulir.mul as usize))
+            .collect()
+    }
+
+    /// # Example
+    /// ```
+    /// # use fastshmul::Irreps;
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// let irrs = Irreps::try_from("5x1o + 4x6e")?;
+    /// assert_eq!(irrs.lmax()?, 6);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// When the `Irreps` is empty
+    /// ```should_panic
+    /// # use fastshmul::Irreps;
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// let irrs = Irreps::try_from("0x1o + 0x6e")?;
+    /// let irrs = irrs.remove_zero_multiplicities();
+    ///
+    /// let _ = irrs.lmax()?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn lmax(&self) -> Result<u32> {
+        self.vec
+            .iter()
+            .map(|mulir| mulir.ir.l)
+            .max()
+            .ok_or_else(|| {
+                UnexpectedError {
+                    msg: String::from("Irreps is empty"),
+                    source: anyhow::anyhow!("Irreps is empty"),
+                }
+                .into()
+            })
     }
 }
 
