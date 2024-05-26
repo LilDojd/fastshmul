@@ -35,23 +35,12 @@ pub struct _MulIr {
 /// This class does not contain any data, it is a structure that describe the representation.
 /// It is typically used as argument of other classes of the library to define the input and output representations of
 /// functions.
+
+// I could have implemented `Deref` and `DerefMut`, but for exposed newtypes
+// the solution is composition over inheritance. Will just delegate to vec when needed
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, IntoIterator)]
 pub struct Irreps {
     vec: Vec<_MulIr>,
-}
-
-impl std::ops::Deref for Irreps {
-    type Target = Vec<_MulIr>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.vec
-    }
-}
-
-impl std::ops::DerefMut for Irreps {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.vec
-    }
 }
 
 impl Irreps {
@@ -158,7 +147,7 @@ impl Irreps {
     /// assert_eq!(simplified.to_string(), "2x1e");
 
     pub fn remove_zero_multiplicities(self) -> Self {
-        let vec = self.vec.into_iter().filter(|mulir| mulir.mul > 0).collect();
+        let vec = self.into_iter().filter(|mulir| mulir.mul > 0).collect();
         Irreps { vec }
     }
 
@@ -186,8 +175,6 @@ impl Irreps {
         let p = inverse_permutation(&inv);
         let vec = self.vec.clone();
         let vec = inv.iter().map(|&i| vec[i]).collect();
-        println!("{inv:?}");
-        println!("{p:?}");
 
         SortedIrreps {
             irreps: Irreps { vec },
@@ -209,17 +196,6 @@ impl From<SortedIrreps> for Irreps {
         sorted.irreps
     }
 }
-
-// impl<Idx> std::ops::Index<Idx> for Irreps
-// where
-//     Idx: std::slice::SliceIndex<[_MulIr]>,
-// {
-//     // type Output = Idx::Output;
-//
-//     // fn index(&self, index: Idx) -> &Self::Output {
-//     //     &self.vec[index]
-//     // }
-// }
 
 impl From<Irrep> for Irreps {
     fn from(irrep: Irrep) -> Self {
